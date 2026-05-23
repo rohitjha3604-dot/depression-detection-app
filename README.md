@@ -109,3 +109,4 @@ This tool is for **research and educational purposes only**. It should **not** b
 ## 📄 License
 
 MIT License — feel free to use and modify for research purposes.
+# depression-detection-app
