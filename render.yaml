@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: depression-detection-app
+    runtime: python
+    plan: free
+    buildCommand: |
+      apt-get update -qq && apt-get install -y -qq libsndfile1 libgomp1
+      pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
+      python -m nltk.downloader punkt stopwords wordnet averaged_perceptron_tagger
+      pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.18
+      - key: STREAMLIT_SERVER_HEADLESS
+        value: "true"
