@@ -9,7 +9,12 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pandas as pd
-import opensmile
+# Audio processing — optional (may fail on some cloud environments)
+try:
+    import opensmile
+    OPENSMILE_AVAILABLE = True
+except Exception:
+    OPENSMILE_AVAILABLE = False
 import os
 import tempfile
 import pickle
@@ -342,6 +347,9 @@ def preprocess_text(text):
 @st.cache_resource
 def load_opensmile():
     """Load OpenSMILE feature extractor"""
+    if not OPENSMILE_AVAILABLE:
+        st.error("OpenSMILE is not available. Audio analysis is disabled.")
+        return None
     smile = opensmile.Smile(
         feature_set=opensmile.FeatureSet.eGeMAPSv02,
         feature_level=opensmile.FeatureLevel.LowLevelDescriptors,
@@ -821,6 +829,9 @@ with tab1:
     st.markdown("### 🎤 Audio-Based Depression Detection")
     st.markdown("*Using Improved 3-Layer CNN with BatchNorm*")
     
+    if not OPENSMILE_AVAILABLE:
+        st.warning("⚠️ OpenSMILE is not installed in this environment. Audio analysis is disabled. Text analysis still works fully.")
+    
     uploaded_audio = st.file_uploader(
         "Upload a WAV audio file",
         type=['wav'],
@@ -835,7 +846,7 @@ with tab1:
             st.metric("File", uploaded_audio.name[:20] + "...")
             st.metric("Size", f"{uploaded_audio.size / 1024:.1f} KB")
         
-        if st.button("🔍 Analyze Audio", key='analyze_audio'):
+        if st.button("🔍 Analyze Audio", key='analyze_audio', disabled=not OPENSMILE_AVAILABLE):
             with st.spinner("Processing audio with Improved CNN..."):
                 # Save temp file
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp:
