@@ -50,8 +50,98 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
-    .main-header {
+    /* ===== HIDE STREAMLIT CHROME ===== */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* ===== LANDING PAGE ===== */
+    .hero-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 4rem 2rem;
+        border-radius: 1.5rem;
+        text-align: center;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    }
+    .hero-title {
+        font-size: 3.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.95;
+        max-width: 650px;
+        margin: 0 auto 2rem;
+    }
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border-top: 4px solid #667eea;
+    }
+    .stat-number {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        height: 100%;
+        transition: transform 0.2s;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    .feature-icon {
         font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .step-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        padding: 2rem;
+        border-radius: 1rem;
+        text-align: center;
+    }
+    .step-number {
+        background: #667eea;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    .landing-footer {
+        text-align: center;
+        color: #666;
+        padding: 2rem;
+        margin-top: 2rem;
+        border-top: 1px solid #eee;
+    }
+    .crisis-banner {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    /* ===== EXISTING APP STYLES ===== */
+    .main-header {
+        font-size: 2.2rem;
         font-weight: 700;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
@@ -60,7 +150,7 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     .sub-header {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         color: #666;
         text-align: center;
         margin-bottom: 2rem;
@@ -738,9 +828,191 @@ def create_word_cloud_data(word_importance):
     
     return fig
 
+def show_landing_page():
+    """Display the landing page with product info and statistics."""
+    # Landing sidebar
+    with st.sidebar:
+        st.markdown("## 🧠 MindGuard")
+        st.markdown("AI-Powered Depression Detection")
+        st.markdown("---")
+        st.markdown("""
+        ### 🚀 Launch App
+        Use the detection tool to analyze audio and text for depression indicators.
+        """)
+        if st.button("🔍 Launch Tool", use_container_width=True):
+            st.session_state.page = 'app'
+            st.rerun()
+        st.markdown("---")
+        st.markdown("""
+        ### ⚠️ Important
+        This tool is for educational purposes only. Always consult a mental health professional for diagnosis.
+        """)
+    
+    # Hero
+    st.markdown("""
+    <div class="hero-container">
+        <h1 class="hero-title">🧠 MindGuard</h1>
+        <p class="hero-subtitle">AI-Powered Multimodal Depression Detection</p>
+        <p style="font-size:1.1rem; opacity:0.9; max-width:600px; margin:0 auto 1.5rem;">
+            Early detection through voice and text analysis. Because mental health matters.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Crisis banner
+    st.markdown("""
+    <div class="crisis-banner">
+        <strong>🚨 If you or someone you know is in crisis:</strong><br>
+        Contact emergency services or a mental health professional immediately. This tool is for educational purposes only.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Statistics
+    st.markdown("## 📊 The Silent Crisis")
+    st.markdown("*Real statistics that drive our mission*")
+    
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-number">280M+</div>
+            <div style="font-size:0.9rem; color:#666;">People affected by depression globally</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c2:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-number">700K+</div>
+            <div style="font-size:0.9rem; color:#666;">Annual deaths by suicide worldwide</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c3:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-number">75%</div>
+            <div style="font-size:0.9rem; color:#666;">In low-income countries receive no treatment</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with c4:
+        st.markdown("""
+        <div class="stat-card">
+            <div class="stat-number">1 in 4</div>
+            <div style="font-size:0.9rem; color:#666;">Young adults experience depression</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.caption("Source: WHO Global Health Estimates 2023")
+    
+    # How it works
+    st.markdown("---")
+    st.markdown("## 🔬 How It Works")
+    
+    hc1, hc2, hc3 = st.columns(3)
+    with hc1:
+        st.markdown("""
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>🎤 Upload Audio</h3>
+            <p style="color:#555;">Record or upload a voice sample. Our CNN analyzes speech patterns, pitch, and tone variations.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with hc2:
+        st.markdown("""
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>📝 Share Text</h3>
+            <p style="color:#555;">Write a diary entry or social media post. Our BiLSTM & ensemble models analyze language markers.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with hc3:
+        st.markdown("""
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>🔀 Get Results</h3>
+            <p style="color:#555;">Multimodal fusion combines both signals with explainable AI for transparent, actionable insights.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Features
+    st.markdown("---")
+    st.markdown("## ✨ Key Features")
+    
+    f1, f2 = st.columns(2)
+    with f1:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🎙️</div>
+            <h3>Audio Analysis</h3>
+            <p style="color:#555;">Deep CNN with BatchNorm extracts 25 acoustic features using OpenSMILE. Detects depression markers in speech patterns.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with f2:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Text Analysis</h3>
+            <p style="color:#555;">Attention BiLSTM + Ensemble models analyze sentiment, negation patterns, and linguistic depression markers.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    f3, f4 = st.columns(2)
+    with f3:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🔀</div>
+            <h3>Multimodal Fusion</h3>
+            <p style="color:#555;">Weighted confidence fusion of audio + text signals. Configurable priorities for different clinical use cases.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with f4:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>Explainable AI</h3>
+            <p style="color:#555;">Feature importance visualizations and natural language explanations make every prediction transparent.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # CTA
+    st.markdown("---")
+    st.markdown("## 🚀 Ready to Analyze?")
+    st.markdown("Begin your mental health assessment. Remember — this tool supports, not replaces, professional care.")
+    
+    col_cta, _ = st.columns([1, 2])
+    with col_cta:
+        if st.button("🔍 Launch Detection Tool", use_container_width=True, type="primary"):
+            st.session_state.page = 'app'
+            st.rerun()
+    
+    # Footer
+    st.markdown("""
+    <div class="landing-footer">
+        <p>⚠️ <strong>Disclaimer:</strong> This tool is for research and educational purposes only. 
+        It is not a substitute for professional medical diagnosis or treatment.</p>
+        <p>Built with ❤️ using Streamlit, PyTorch, OpenSMILE & NLP</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 # ============== MAIN APP ==============
-st.markdown('<h1 class="main-header">🧠 Multimodal Depression Detection</h1>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Audio + Text Analysis with Explainable AI (Enhanced Models)</p>', unsafe_allow_html=True)
+if 'page' not in st.session_state:
+    st.session_state.page = 'landing'
+
+if st.session_state.page == 'landing':
+    show_landing_page()
+    st.stop()
+
+# App header with back button
+col_h1, col_h2 = st.columns([4, 1])
+with col_h1:
+    st.markdown('<h1 class="main-header">🧠 Multimodal Depression Detection</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">Audio + Text Analysis with Explainable AI</p>', unsafe_allow_html=True)
+with col_h2:
+    st.write("")
+    st.write("")
+    if st.button("← Home", key="back_to_landing"):
+        st.session_state.page = 'landing'
+        st.rerun()
 
 # Load model info for metrics display
 save_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "saved_models")
