@@ -1,97 +1,121 @@
-# 🧠 Multimodal Depression Detection
+# 🧠 MiSec — Multimodal Depression Detection
 
-A web application that detects signs of depression by analyzing both **audio (speech)** and **text** inputs using deep learning and machine learning models, with built-in **Explainable AI (XAI)**.
+A Streamlit web app that detects signs of depression by analyzing **audio (speech)** and **text** inputs using deep learning models, with **Explainable AI (XAI)** and **LLM-powered clinical analysis**.
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app-name.streamlit.app)
-
----
-
-## 🎯 Features
-
-- 🎤 **Audio Analysis** — Upload a WAV file. An improved 3-layer CNN with BatchNorm analyzes OpenSMILE eGeMAPSv02 speech features (pitch, jitter, shimmer, MFCCs, loudness).
-- 📝 **Text Analysis** — Enter any text. Three models available:
-  - **Best ML Model** — Stacking Ensemble (XGBoost + LightGBM + Gradient Boosting + SVM → Logistic Regression meta)
-  - **Ensemble** — Soft Voting Ensemble
-  - **Attention BiLSTM** — Deep learning with self-attention mechanism
-- 🔀 **Multimodal Fusion** — Combines audio + text predictions with configurable weights.
-- 🔍 **Explainable AI** — See which audio features or words drove the prediction.
-
----
-
-## 📊 Model Performance
-
-| Modality | Best Model | Accuracy | F1 Score |
-|----------|-----------|----------|----------|
-| **Text (DL)** | Attention BiLSTM | 72.92% | **74.05%** |
-| **Text (ML)** | Stacking Ensemble | 73.76% | 73.33% |
-| **Audio** | Improved 3-Layer CNN | **100.00%** (file-level) | **100.00%** |
+![Streamlit](https://img.shields.io/badge/Streamlit-1.50.0-FF4B4B?logo=streamlit)
+![Python](https://img.shields.io/badge/Python-3.9-3776AB?logo=python)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0-EE4C2C?logo=pytorch)
 
 ---
 
 ## 🚀 Quick Start (Local)
 
+### 1. Clone the repo
+
 ```bash
-# Clone the repo
-git clone https://github.com/YOUR_USERNAME/multimodal-depression-detection.git
-cd multimodal-depression-detection
+git clone https://github.com/rohitjha3604-dot/depression-detection-app.git
+cd depression-detection-app
+```
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+### 2. Create a virtual environment
 
-# Install dependencies
+```bash
+python3.9 -m venv venv
+source venv/bin/activate        # macOS/Linux
+# OR
+venv\Scripts\activate           # Windows
+```
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-# Run the app
+> **Note:** PyTorch is pinned to CPU-only version in `requirements.txt`. If you have a GPU, adjust the torch install command accordingly.
+
+### 4. Set your OpenAI API key (optional)
+
+The **AI-Powered Deep Analysis** feature uses GPT-4o-mini. If you skip this step, the app runs fine but the LLM analysis section won't appear.
+
+```bash
+export OPENAI_API_KEY="sk-..."
+```
+
+> On Windows: `set OPENAI_API_KEY=sk-...`
+
+### 5. Run the app
+
+```bash
 streamlit run app.py
 ```
 
-Then open `http://localhost:8501` in your browser.
-
-> **macOS users:** If XGBoost/LightGBM fail to load, install OpenMP:
-> ```bash
-> brew install libomp
-> ```
+Open **http://localhost:8501** in your browser.
 
 ---
 
-## ☁️ Deploy to Streamlit Community Cloud
+## 🐳 Run with Docker
+
+```bash
+# Build
+docker build -t misec-app .
+
+# Run
+docker run -p 8501:8501 -e OPENAI_API_KEY="sk-..." misec-app
+```
+
+Open **http://localhost:8501**.
+
+---
+
+## ☁️ Deploy to Render
 
 1. Push this repo to GitHub
-2. Go to [share.streamlit.io](https://share.streamlit.io)
+2. Go to [dashboard.render.com](https://dashboard.render.com) → **New +** → **Web Service**
 3. Connect your GitHub repo
-4. Set main file to `app.py`
-5. Deploy
+4. Select **Docker** as the runtime
+5. Add environment variable: `OPENAI_API_KEY = sk-...`
+6. Click **Create Web Service**
 
-See [`DEPLOY.md`](DEPLOY.md) for detailed instructions and Docker setup.
+Render will build from the `Dockerfile` and deploy automatically.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-├── app.py                    # Main Streamlit application
-├── saved_models/             # Trained model artifacts (~119MB)
+├── app.py                    # Main Streamlit app (landing page + dashboard)
+├── saved_models/             # Trained model artifacts (~120MB)
 │   ├── improved_audio_cnn.pth
 │   ├── lstm_model.pth
 │   ├── best_text_model.pkl
-│   ├── tfidf_vectorizer.pkl
 │   └── ...
-├── audiomodels/              # Audio model architectures (CNN, LSTM, BiLSTM, etc.)
-├── decision/                 # Multimodal fusion strategies
-├── feturelevelfusion/        # Feature-level fusion models
+├── audiomodels/              # Audio model architectures
+├── decision/                 # Fusion strategies (Weighted, Stacking, etc.)
+├── extract_audio.py          # Audio feature extraction (OpenSMILE)
+├── extractBERT.py            # BERT feature extraction
 ├── train_text_model.py       # Text model training pipeline
-├── extract_audio*.py         # Audio feature extraction scripts
 ├── requirements.txt          # Python dependencies
-├── packages.txt              # System dependencies (for Streamlit Cloud)
-└── DEPLOY.md                 # Deployment guide
+└── Dockerfile                # Render deployment
 ```
+
+---
+
+## 🎯 Features
+
+| Feature | Description |
+|---------|-------------|
+| 🎤 **Audio Analysis** | Upload WAV or record live voice. CNN analyzes OpenSMILE eGeMAPS features. |
+| 📝 **Text Analysis** | Enter text. Choose from Stacking Ensemble, Soft Voting, or Attention BiLSTM. |
+| 🔀 **Multimodal Fusion** | Combines audio + text with configurable weights. |
+| 🔍 **Explainable AI** | See which audio features or words drove the prediction. |
+| 🤖 **AI Deep Analysis** | GPT-4o-mini generates a structured clinical report (requires API key). |
 
 ---
 
 ## ⚠️ Disclaimer
 
-This tool is for **research and educational purposes only**. It should **not** be used as a substitute for professional medical diagnosis or mental health counseling.
+This tool is for **research and educational purposes only**. It is **not** a substitute for professional medical diagnosis or mental health counseling.
 
 ---
 
@@ -102,10 +126,5 @@ This tool is for **research and educational purposes only**. It should **not** b
 - **ML Models:** scikit-learn, XGBoost, LightGBM
 - **Audio Features:** OpenSMILE (eGeMAPSv02)
 - **NLP:** NLTK, TF-IDF
+- **LLM:** OpenAI GPT-4o-mini
 - **Visualization:** Plotly
-
----
-
-## 📄 License
-
-MIT License — feel free to use and modify for research purposes.
