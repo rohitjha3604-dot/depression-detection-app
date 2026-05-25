@@ -15,3 +15,4 @@ nltk>=3.8.0
 
 # Audio
 opensmile>=2.4.0
+openai>=1.0.0
