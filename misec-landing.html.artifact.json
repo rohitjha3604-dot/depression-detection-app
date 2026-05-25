@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "MiSec Multimodal Depression Detection Landing Page",
+  "entry": "misec-landing.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-05-25T07:22:46.144Z",
+  "updatedAt": "2026-05-25T07:22:46.147Z",
+  "metadata": {
+    "identifier": "misec-landing",
+    "artifactType": "text/html",
+    "inferred": false
+  }
+}

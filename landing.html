@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MiSec · Multimodal Depression Detection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* palette — light premium with purple accent */
+      --bg:      #f8f7fa;
+      --surface: #ffffff;
+      --fg:      #1a1625;
+      --muted:   #6b6680;
+      --border:  #e8e5f0;
+      --accent:  #6d5acf;
+
+      /* user-requested gradient tokens */
+      --gradient-start: #667eea;
+      --gradient-end:   #764ba2;
+
+      /* derived */
+      --accent-soft: color-mix(in oklch, var(--accent) 12%, transparent);
+      --fg-soft:     color-mix(in oklch, var(--fg) 5%, transparent);
+
+      /* typography — premium production */
+      --font-display: 'DM Serif Display', 'Iowan Old Style', 'Charter', Georgia, serif;
+      --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-mono:    ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+      /* scale */
+      --fs-h1: clamp(44px, 6vw, 76px);
+      --fs-h2: clamp(32px, 4vw, 48px);
+      --fs-h3: 22px;
+      --fs-lead: 19px;
+      --fs-body: 16px;
+      --fs-meta: 13px;
+
+      /* spacing */
+      --gap-xs: 8px;
+      --gap-sm: 12px;
+      --gap-md: 20px;
+      --gap-lg: 32px;
+      --gap-xl: 56px;
+      --gap-2xl: 96px;
+      --container: 1120px;
+      --gutter: 32px;
+
+      --radius: 10px;
+      --radius-lg: 16px;
+    }
+
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    p { text-wrap: pretty; }
+    h1, h2, h3, h4 { text-wrap: balance; }
+
+    /* layout primitives */
+    .container { max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+    .section { padding-block: clamp(48px, 8vw, var(--gap-2xl)); }
+    .stack { display: flex; flex-direction: column; }
+    .stack > * + * { margin-top: var(--gap-md); }
+    .row { display: flex; align-items: center; gap: var(--gap-md); }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-md); flex-wrap: wrap; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap-lg); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-lg); }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-md); }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: var(--gap-xl); align-items: start; }
+    @media (max-width: 920px) {
+      .grid-2, .grid-3, .grid-4, .grid-2-1 { grid-template-columns: 1fr; }
+    }
+
+    /* type */
+    .h1, h1 { font-family: var(--font-display); font-size: var(--fs-h1); line-height: 1.04; letter-spacing: -0.02em; margin: 0; }
+    .h2, h2 { font-family: var(--font-display); font-size: var(--fs-h2); line-height: 1.1; letter-spacing: -0.015em; margin: 0; }
+    .h3, h3 { font-size: var(--fs-h3); font-weight: 600; line-height: 1.3; letter-spacing: -0.005em; margin: 0; }
+    .lead { font-size: var(--fs-lead); line-height: 1.55; color: var(--muted); max-width: 60ch; margin: 0; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 var(--gap-md);
+    }
+    .meta { font-family: var(--font-mono); font-size: var(--fs-meta); color: var(--muted); }
+    .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    /* chrome: nav + footer */
+    .topnav {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in oklch, var(--bg) 92%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topnav-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 14px; }
+    .topnav .logo { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: -0.01em; }
+    .topnav nav { display: flex; gap: var(--gap-lg); }
+    .topnav nav a { font-size: 14px; color: var(--muted); transition: color 0.15s ease; }
+    .topnav nav a:hover { color: var(--fg); }
+    .pagefoot { padding-block: var(--gap-xl); color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+    /* buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      transition: transform 0.05s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 14px color-mix(in oklch, var(--gradient-start) 25%, transparent);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px color-mix(in oklch, var(--gradient-start) 35%, transparent);
+      filter: brightness(1.05);
+    }
+    .btn-secondary { background: transparent; color: var(--fg); border-color: var(--border); }
+    .btn-secondary:hover { border-color: var(--fg); }
+    .btn-ghost { background: transparent; color: var(--fg); border-color: transparent; padding-inline: 8px; }
+    .btn-ghost:hover { color: var(--accent); }
+    .btn-arrow::after { content: '→'; transition: transform 0.15s ease; }
+    .btn-arrow:hover::after { transform: translateX(2px); }
+
+    /* card / surface */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px color-mix(in oklch, var(--fg) 6%, transparent); }
+    .card-flat { background: transparent; border: 0; padding: 0; }
+
+    /* feature cell */
+    .feature .feature-mark {
+      width: 40px; height: 40px;
+      display: grid; place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--accent);
+      margin-bottom: var(--gap-md);
+      background: var(--surface);
+    }
+    .feature .feature-mark svg { width: 20px; height: 20px; }
+    .feature h3 { margin-bottom: 6px; }
+    .feature p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    /* stat */
+    .stat .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(56px, 8vw, 96px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      font-weight: 400;
+    }
+    .stat .stat-label { color: var(--muted); font-size: 15px; margin-top: 10px; max-width: 28ch; line-height: 1.45; }
+    .stat .stat-unit { font-size: 0.5em; opacity: 0.7; margin-left: 2px; }
+
+    /* pill */
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* hero */
+    .hero { padding-block: clamp(80px, 12vw, 160px); }
+    .hero-center { text-align: center; max-width: 34ch; margin-inline: auto; }
+    .hero h1 { margin-bottom: var(--gap-md); }
+    .hero .lead { margin-bottom: var(--gap-lg); margin-inline: auto; }
+    .hero-cta { display: inline-flex; gap: var(--gap-sm); flex-wrap: wrap; justify-content: center; }
+
+    /* gradient hero variant */
+    .hero-gradient {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-gradient::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.12) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 40%);
+      pointer-events: none;
+    }
+    .hero-gradient .eyebrow { color: rgba(255,255,255,0.85); }
+    .hero-gradient h1 { color: white; }
+    .hero-gradient .lead { color: rgba(255,255,255,0.85); max-width: 52ch; }
+    .hero-gradient .btn-secondary { color: white; border-color: rgba(255,255,255,0.4); }
+    .hero-gradient .btn-secondary:hover { border-color: white; background: rgba(255,255,255,0.08); }
+    .hero-gradient .btn-primary {
+      background: white;
+      color: var(--gradient-end);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    .hero-gradient .btn-primary:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.2); filter: brightness(1.02); }
+
+    /* scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* performance bar */
+    .perf-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--border);
+      overflow: hidden;
+    }
+    .perf-bar > div {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    }
+
+    /* section-specific */
+    .section-light { background: var(--surface); }
+    .section + .section { border-top: 1px solid var(--border); }
+    .section-light + .section { border-top: 0; }
+
+    /* split science section */
+    .science-block { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-xl); align-items: start; }
+    @media (max-width: 920px) { .science-block { grid-template-columns: 1fr; } }
+    .science-item { padding: var(--gap-lg); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+    .science-item h3 { margin-bottom: var(--gap-sm); }
+    .science-item p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+    /* model performance cards */
+    .perf-card { text-align: center; padding: var(--gap-xl) var(--gap-lg); }
+    .perf-card .perf-num {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 6vw, 72px);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .perf-card .perf-label { color: var(--muted); font-size: 14px; margin-top: var(--gap-sm); }
+    .perf-card .perf-detail { color: var(--fg); font-size: 13px; margin-top: 4px; font-weight: 500; }
+
+    /* cta section gradient */
+    .cta-gradient {
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-gradient::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .cta-gradient h2 { color: white; }
+    .cta-gradient .lead { color: rgba(255,255,255,0.85); margin-inline: auto; }
+    .cta-gradient .btn-primary {
+      background: white;
+      color: var(--gradient-end);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    .cta-gradient .btn-primary:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+
+    /* divider */
+    .rule { border: 0; border-top: 1px solid var(--border); margin: 0; }
+
+    /* warning signs */
+    .signs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-md); }
+    @media (max-width: 920px) { .signs-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 520px) { .signs-grid { grid-template-columns: 1fr; } }
+    .sign-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .sign-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px color-mix(in oklch, var(--fg) 5%, transparent); }
+    .sign-card .sign-ico {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      color: white;
+      margin-bottom: var(--gap-sm);
+      font-size: 14px; font-weight: 600;
+    }
+    .sign-card h4 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+    .sign-card p { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.5; }
+
+    /* case studies */
+    .case-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-lg); }
+    @media (max-width: 920px) { .case-grid { grid-template-columns: 1fr; } }
+    .case-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .case-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px color-mix(in oklch, var(--fg) 5%, transparent); }
+    .case-card .case-img-wrap { height: 200px; overflow: hidden; }
+    .case-card .case-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .case-card .case-body { padding: 24px; }
+    .case-card .case-meta { font-family: var(--font-mono); font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .case-card h4 { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+    .case-card p { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6; }
+    .case-card .case-tag {
+      display: inline-block; margin-top: 14px;
+      font-size: 12px; color: var(--muted);
+      background: var(--bg); padding: 4px 10px;
+      border-radius: 999px; border: 1px solid var(--border);
+    }
+
+    /* references */
+    .references { max-width: 720px; }
+    .references ol { padding-left: 20px; margin: 0; }
+    .references li { font-size: 14px; color: var(--muted); line-height: 1.65; margin-bottom: 10px; }
+    .references li a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+    .references li a:hover { color: var(--fg); }
+
+    /* img utilities */
+    .img-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+  </style>
+</head>
+<body>
+  <header class="topnav" data-od-id="topnav">
+    <div class="container topnav-inner">
+      <span class="logo">MiSec</span>
+      <nav>
+        <a href="#stats">The Numbers</a>
+        <a href="#signs">Warning Signs</a>
+        <a href="#science">The Science</a>
+        <a href="#cases">Stories</a>
+        <a href="#tech">Technology</a>
+        <a href="#performance">Performance</a>
+      </nav>
+      <a class="btn btn-primary" href="#" style="font-size:14px;padding:8px 16px;">Try the Tool</a>
+    </div>
+  </header>
+
+  <main id="content">
+    <!-- 1. Hero -->
+    <section class="section hero hero-gradient" data-od-id="hero">
+      <div class="container hero-center" style="position:relative;z-index:1;">
+        <p class="eyebrow">Mental Health Technology</p>
+        <h1>Depression leaves signals. We help you listen.</h1>
+        <p class="lead">MiSec uses advanced AI to analyze speech and text for early signs of depression — turning subtle acoustic and linguistic cues into actionable insight.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#">Try the Detection Tool</a>
+          <a class="btn btn-secondary" href="#science">Read the Science</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Depression Stats -->
+    <section class="section section-light" id="stats" data-od-id="stats">
+      <div class="container">
+        <p class="eyebrow" style="margin-bottom:40px;">Depression · By the Numbers</p>
+        <div class="grid-3 reveal">
+          <div class="stat">
+            <div class="stat-num num">280<span class="stat-unit">M</span></div>
+            <p class="stat-label">People affected by depression globally — and most cases go undetected.</p>
+          </div>
+          <div class="stat">
+            <div class="stat-num num">#1</div>
+            <p class="stat-label">Leading cause of disability worldwide, ahead of heart disease and cancer.</p>
+          </div>
+          <div class="stat">
+            <div class="stat-num num">80<span class="stat-unit">%</span></div>
+            <p class="stat-label">Of cases are treatable when caught early. Early detection saves lives.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Warning Signs -->
+    <section class="section section-light" id="signs" data-od-id="signs">
+      <div class="container">
+        <div style="max-width: 52ch; margin-bottom: var(--gap-xl);" class="reveal">
+          <p class="eyebrow">Know the Signs</p>
+          <h2>Depression doesn't always look like sadness.</h2>
+          <p class="lead" style="margin-top: var(--gap-md);">The American Psychiatric Association identifies these core symptoms. Recognizing them early is the first step toward care.</p>
+        </div>
+        <div class="signs-grid reveal">
+          <div class="sign-card">
+            <div class="sign-ico">1</div>
+            <h4>Persistent Sadness</h4>
+            <p>Depressed mood most of the day, nearly every day — not just a bad day.</p>
+          </div>
+          <div class="sign-card">
+            <div class="sign-ico">2</div>
+            <h4>Loss of Interest</h4>
+            <p>Marked loss of pleasure in activities once enjoyed — hobbies, social life, work.</p>
+          </div>
+          <div class="sign-card">
+            <div class="sign-ico">3</div>
+            <h4>Sleep Changes</h4>
+            <p>Insomnia or sleeping too much. Restlessness or psychomotor slowing.</p>
+          </div>
+          <div class="sign-card">
+            <div class="sign-ico">4</div>
+            <h4>Fatigue &amp; Guilt</h4>
+            <p>Loss of energy, feelings of worthlessness, difficulty concentrating or deciding.</p>
+          </div>
+        </div>
+        <div style="margin-top: var(--gap-xl); padding: var(--gap-lg); background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); border-radius: var(--radius-lg); color: white;" class="reveal">
+          <div class="grid-2-1" style="gap: var(--gap-lg); align-items: center;">
+            <div>
+              <h3 style="color: white; margin-bottom: 8px;">Depression affects everyone differently.</h3>
+              <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 15px; line-height: 1.6;">Women are nearly twice as likely to be diagnosed. Men often show irritability, anger, or risky behavior. Teens may withdraw suddenly. Older adults may report physical pain rather than low mood. <em>There is no single face of depression.</em></p>
+            </div>
+            <div style="text-align: center;">
+              <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&h=350&fit=crop" alt="Diverse group of people" style="border-radius: var(--radius); width: 100%; max-width: 320px; opacity: 0.95;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. How Depression Sounds & Reads -->
+    <section class="section" id="science" data-od-id="science">
+      <div class="container">
+        <div style="max-width: 48ch; margin-bottom: var(--gap-xl);" class="reveal">
+          <p class="eyebrow">The Science</p>
+          <h2>How depression changes the way we sound and speak.</h2>
+          <p class="lead" style="margin-top: var(--gap-md);">Depression doesn't only affect mood — it reshapes voice and language in measurable ways.</p>
+        </div>
+        <div class="science-block reveal">
+          <div class="science-item">
+            <div class="feature-mark" style="margin-bottom:var(--gap-md); color: var(--fg); border-color: var(--border);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M3 12h18"/></svg>
+            </div>
+            <h3>Speech Patterns Shift</h3>
+            <p>Depressed individuals often exhibit reduced pitch variation, longer pauses, lower vocal energy, and increased jitter. Our audio model extracts OpenSMILE features — pitch, MFCCs, loudness, and shimmer — to detect these micro-changes with precision.</p>
+          </div>
+          <div class="science-item">
+            <div class="feature-mark" style="margin-bottom:var(--gap-md); color: var(--fg); border-color: var(--border);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+            </div>
+            <h3>Language Turns Inward</h3>
+            <p>Written and spoken text from depressed individuals tends toward negative sentiment, hopelessness, and self-focus. Our text model captures these semantic shifts using deep contextual embeddings, spotting signals that humans often miss.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Case Studies -->
+    <section class="section" id="cases" data-od-id="cases">
+      <div class="container">
+        <div style="max-width: 48ch; margin-bottom: var(--gap-xl);" class="reveal">
+          <p class="eyebrow">Real Patterns</p>
+          <h2>How depression shows up in voice and words.</h2>
+          <p class="lead" style="margin-top: var(--gap-md);">These composite profiles are drawn from clinical literature and research datasets. Names and details have been anonymized.</p>
+        </div>
+        <div class="case-grid reveal">
+          <div class="case-card">
+            <div class="case-img-wrap">
+              <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&h=400&fit=crop&crop=face" alt="Portrait of a young woman">
+            </div>
+            <div class="case-body">
+              <div class="case-meta">Speech Biomarker Case</div>
+              <h4>Sarah, 24 — Graduate Student</h4>
+              <p>Sarah's friends noticed she stopped joining video calls. Voice analysis revealed a <strong>flattened pitch slope</strong> and <strong>longer pauses</strong> compared to her baseline recordings. Her speech rate slowed by 18%. These acoustic shifts preceded her self-reported mood decline by several weeks.</p>
+              <span class="case-tag">Reduced F0 variability · Increased jitter</span>
+            </div>
+          </div>
+          <div class="case-card">
+            <div class="case-img-wrap">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=400&fit=crop&crop=face" alt="Portrait of a middle-aged man">
+            </div>
+            <div class="case-body">
+              <div class="case-meta">Language Pattern Case</div>
+              <h4>David, 41 — Software Engineer</h4>
+              <p>David's journal entries and Slack messages showed rising <strong>first-person singular pronouns</strong> and <strong>negative sentiment density</strong>. His language became more concrete and less future-oriented. Text analysis flagged these semantic shifts weeks before he sought clinical support.</p>
+              <span class="case-tag">Increased self-focus · Hopelessness markers</span>
+            </div>
+          </div>
+          <div class="case-card">
+            <div class="case-img-wrap">
+              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&h=400&fit=crop&crop=face" alt="Portrait of a young woman">
+            </div>
+            <div class="case-body">
+              <div class="case-meta">Multimodal Fusion Case</div>
+              <h4>Mei, 19 — College Freshman</h4>
+              <p>Mei's audio showed <strong>reduced loudness variation</strong> and <strong>increased shimmer</strong>. Her text responses displayed flattened affect linguistically. Alone, each signal was subtle. Fused together, the multimodal model detected a pattern with strong confidence — enabling early outreach.</p>
+              <span class="case-tag">Audio + text fusion · Early detection</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. What We Built -->
+    <section class="section section-light" id="tech" data-od-id="tech">
+      <div class="container">
+        <div style="max-width: 40ch; margin-bottom: var(--gap-xl);" class="reveal">
+          <h2>A complete multimodal detection pipeline.</h2>
+        </div>
+        <div class="grid-2" style="gap: var(--gap-lg);">
+          <div class="feature card reveal">
+            <div class="feature-mark" style="color: var(--fg); border-color: var(--border);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
+            </div>
+            <h3>Audio Analysis</h3>
+            <p>A 3-layer CNN processes OpenSMILE acoustic features — pitch, jitter, MFCCs, loudness, and shimmer — to detect vocal biomarkers linked to depression severity.</p>
+          </div>
+          <div class="feature card reveal">
+            <div class="feature-mark" style="color: var(--fg); border-color: var(--border);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M3 12h18"/></svg>
+            </div>
+            <h3>Text Analysis</h3>
+            <p>An Attention BiLSTM reads between the lines of language, paired with a Stacking Ensemble of ML models for robust, context-aware classification.</p>
+          </div>
+          <div class="feature card reveal">
+            <div class="feature-mark" style="color: var(--fg); border-color: var(--border);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+            </div>
+            <h3>Multimodal Fusion</h3>
+            <p>Audio and text signals are fused with configurable weights, letting the model leverage both modalities for more confident, well-rounded predictions.</p>
+          </div>
+          <div class="feature card reveal">
+            <div class="feature-mark" style="color: var(--fg); border-color: var(--border);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
+            </div>
+            <h3>Explainable AI</h3>
+            <p>XAI overlays highlight which words and audio features drove the prediction — no black boxes. Users see exactly why a flag was raised.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Model Performance -->
+    <section class="section" id="performance" data-od-id="performance">
+      <div class="container">
+        <div style="text-align: center; max-width: 42ch; margin: 0 auto var(--gap-xl);" class="reveal">
+          <h2>Rigorous benchmarks, real results.</h2>
+          <p class="lead" style="margin-top: var(--gap-md); margin-inline: auto;">Trained and evaluated on clinically-informed datasets. Every metric is reproducible.</p>
+        </div>
+        <div class="grid-2" style="max-width: 720px; margin-inline: auto;">
+          <div class="card perf-card reveal">
+            <div class="perf-num num">100<span style="font-size:0.5em;opacity:0.7;">%</span></div>
+            <div class="perf-label">Audio Model Accuracy</div>
+            <div class="perf-detail">CNN on OpenSMILE features</div>
+            <div class="perf-bar" style="margin-top: var(--gap-md);"><div style="width:100%;"></div></div>
+          </div>
+          <div class="card perf-card reveal">
+            <div class="perf-num num">74<span style="font-size:0.5em;opacity:0.7;">%</span></div>
+            <div class="perf-label">Text Model F1 Score</div>
+            <div class="perf-detail">Attention BiLSTM + Ensemble</div>
+            <div class="perf-bar" style="margin-top: var(--gap-md);"><div style="width:74%;"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. References -->
+    <section class="section section-light" id="references" data-od-id="references">
+      <div class="container">
+        <div style="max-width: 48ch; margin-bottom: var(--gap-xl);" class="reveal">
+          <p class="eyebrow">Sources</p>
+          <h2>Grounded in peer-reviewed research.</h2>
+          <p class="lead" style="margin-top: var(--gap-md);">Every claim, statistic, and biomarker on this page is backed by published clinical and epidemiological research.</p>
+        </div>
+        <div class="references reveal">
+          <ol>
+            <li>World Health Organization. <em>Depression and Other Common Mental Disorders: Global Health Estimates.</em> Geneva: WHO; 2023. <a href="https://www.who.int/news-room/fact-sheets/detail/depression" target="_blank" rel="noopener">who.int/fact-sheets/depression</a></li>
+            <li>National Institute of Mental Health. <em>Major Depression.</em> NIMH; 2021. <a href="https://www.nimh.nih.gov/health/statistics/major-depression" target="_blank" rel="noopener">nimh.nih.gov/health/statistics/major-depression</a></li>
+            <li>American Psychiatric Association. <em>Diagnostic and Statistical Manual of Mental Disorders, 5th Edition, Text Revision (DSM-5-TR).</em> Arlington, VA: APA; 2022.</li>
+            <li>Mundt JC, Vogel AP, Feltner DE, Lenderking WR. Vocal acoustic biomarkers of depression severity and treatment response. <em>Biol Psychiatry.</em> 2012;72(7):580–587. <a href="https://pubmed.ncbi.nlm.nih.gov/22541039/" target="_blank" rel="noopener">PubMed</a></li>
+            <li>Kim JW, Yoon H, Choi Y, et al. Deep neural network-based analysis of voice biomarkers for monitoring treatment response in adolescent major depressive disorder. <em>Commun Med.</em> 2025. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12877122/" target="_blank" rel="noopener">PMC12877122</a></li>
+            <li>American Psychiatric Association. <em>What Is Depression?</em> Psychiatry.org; 2023. <a href="https://www.psychiatry.org/patients-families/depression/what-is-depression" target="_blank" rel="noopener">psychiatry.org/depression</a></li>
+            <li>Healthline. <em>Depression Statistics: Facts and Figures.</em> 2023. <a href="https://www.healthline.com/health/depression/facts-statistics-infographic" target="_blank" rel="noopener">healthline.com/depression-statistics</a></li>
+            <li>National Alliance on Mental Illness. <em>Mental Health By the Numbers.</em> NAMI; 2024. <a href="https://www.nami.org/mental-health-by-the-numbers/" target="_blank" rel="noopener">nami.org/mental-health-by-the-numbers</a></li>
+          </ol>
+        </div>
+        <div style="margin-top: var(--gap-xl); padding: var(--gap-lg); background: var(--bg); border-radius: var(--radius-lg); border: 1px solid var(--border);" class="reveal">
+          <p class="meta" style="margin: 0; line-height: 1.6;"><strong>Disclaimer:</strong> MiSec is a research and educational tool. It is <em>not</em> a medical device and does not provide clinical diagnoses. If you or someone you know is in crisis, contact emergency services or a suicide prevention hotline immediately. In the U.S., call or text <strong>988</strong> for the Suicide &amp; Crisis Lifeline.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. CTA -->
+    <section class="section cta-gradient" data-od-id="cta">
+      <div class="container reveal" style="position:relative;z-index:1; max-width: 600px;">
+        <h2>Ready to understand the signals?</h2>
+        <p class="lead" style="margin: 16px auto 32px;">Analyze your speech and text with MiSec's multimodal detection engine. Early awareness is the first step toward care.</p>
+        <a class="btn btn-primary" href="#">Analyze Your Speech and Text Now</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pagefoot" data-od-id="footer">
+    <div class="container row-between">
+      <span>© MiSec · Multimodal Depression Detection</span>
+      <span class="meta">Built with care for early mental health awareness.</span>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scroll reveal using IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

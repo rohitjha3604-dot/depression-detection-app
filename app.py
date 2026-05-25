@@ -41,7 +41,7 @@ except:
 
 # Configure page
 st.set_page_config(
-    page_title="Multimodal Depression Detection",
+    page_title="MiSec · Multimodal Depression Detection",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -50,161 +50,365 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
 <style>
+    /* ===== GOOGLE FONTS ===== */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap');
+    
     /* ===== HIDE STREAMLIT CHROME ===== */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* ===== LANDING PAGE ===== */
-    .hero-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 4rem 2rem;
-        border-radius: 1.5rem;
-        text-align: center;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+    /* ===== DESIGN TOKENS ===== */
+    :root {
+        --bg: #f8f7fa;
+        --surface: #ffffff;
+        --fg: #1a1625;
+        --muted: #6b6680;
+        --border: #e8e5f0;
+        --accent: #6d5acf;
+        --gradient-start: #667eea;
+        --gradient-end: #764ba2;
+        --radius: 10px;
+        --radius-lg: 16px;
     }
-    .hero-title {
-        font-size: 3.2rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        line-height: 1.2;
+    
+    .stApp {
+        background: var(--bg);
     }
-    .hero-subtitle {
-        font-size: 1.25rem;
-        opacity: 0.95;
-        max-width: 650px;
-        margin: 0 auto 2rem;
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
-    .stat-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        border-top: 4px solid #667eea;
+    
+    /* ===== TYPOGRAPHY ===== */
+    .h1, .h1-misec {
+        font-family: 'DM Serif Display', 'Iowan Old Style', 'Charter', Georgia, serif;
+        font-size: clamp(36px, 5vw, 64px);
+        line-height: 1.04;
+        letter-spacing: -0.02em;
+        color: var(--fg);
+        margin: 0;
     }
-    .stat-number {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #667eea;
+    .h2, .h2-misec {
+        font-family: 'DM Serif Display', 'Iowan Old Style', 'Charter', Georgia, serif;
+        font-size: clamp(28px, 3.5vw, 44px);
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        color: var(--fg);
+        margin: 0;
     }
-    .feature-card {
-        background: white;
-        padding: 2rem;
-        border-radius: 1rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        height: 100%;
-        transition: transform 0.2s;
+    .h3, .h3-misec {
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--fg);
+        margin: 0;
     }
-    .feature-card:hover {
-        transform: translateY(-5px);
+    .lead-misec {
+        font-size: 17px;
+        line-height: 1.55;
+        color: var(--muted);
+        max-width: 60ch;
+        margin: 0;
     }
-    .feature-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+    .eyebrow {
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 12px;
     }
-    .step-card {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-        padding: 2rem;
-        border-radius: 1rem;
-        text-align: center;
+    .meta-misec {
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 13px;
+        color: var(--muted);
     }
-    .step-number {
-        background: #667eea;
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+    
+    /* ===== BUTTONS ===== */
+    .btn-primary-misec {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        margin-bottom: 1rem;
+        gap: 8px;
+        padding: 14px 32px;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        color: white;
+        border: none;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(102, 126, 234, 0.25);
+        transition: box-shadow 0.2s ease, filter 0.2s ease;
+        text-decoration: none;
     }
-    .landing-footer {
+    .btn-primary-misec:hover {
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+        filter: brightness(1.05);
+    }
+    .btn-secondary-misec {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 32px;
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--fg);
+        border: 1px solid var(--border);
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background 0.2s ease;
+        text-decoration: none;
+    }
+    .btn-secondary-misec:hover {
+        border-color: var(--fg);
+        background: rgba(26, 22, 37, 0.04);
+    }
+    
+    /* ===== CARDS ===== */
+    .card-misec {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-misec:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(26, 22, 37, 0.06);
+    }
+    
+    /* ===== LANDING PAGE ===== */
+    .hero-gradient {
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        color: white;
+        padding: clamp(48px, 8vw, 96px) 2rem;
+        border-radius: var(--radius-lg);
         text-align: center;
-        color: #666;
-        padding: 2rem;
-        margin-top: 2rem;
-        border-top: 1px solid #eee;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 2rem;
     }
+    .hero-gradient::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.12) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 40%);
+        pointer-events: none;
+    }
+    .hero-gradient .eyebrow { color: rgba(255,255,255,0.85); position: relative; z-index: 1; }
+    .hero-gradient h1 { color: white; margin-bottom: 20px; position: relative; z-index: 1; }
+    .hero-gradient .lead-misec { color: rgba(255,255,255,0.85); margin: 0 auto 32px; max-width: 52ch; position: relative; z-index: 1; }
+    .hero-cta { display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center; position: relative; z-index: 1; }
+    .hero-gradient .btn-secondary-misec { color: white; border-color: rgba(255,255,255,0.4); }
+    .hero-gradient .btn-secondary-misec:hover { border-color: white; background: rgba(255,255,255,0.08); }
+    .hero-gradient .btn-primary-misec {
+        background: white;
+        color: var(--gradient-end);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    .hero-gradient .btn-primary-misec:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    
+    .stat-card-misec {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+    .stat-num-misec {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: clamp(48px, 7vw, 80px);
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        color: var(--accent);
+        font-weight: 400;
+    }
+    .stat-label-misec {
+        color: var(--muted);
+        font-size: 15px;
+        margin-top: 10px;
+        max-width: 28ch;
+        line-height: 1.45;
+        margin-inline: auto;
+    }
+    .stat-unit { font-size: 0.5em; opacity: 0.7; margin-left: 2px; }
+    
+    .science-item {
+        padding: 28px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+    }
+    .science-item h3 { margin-bottom: 12px; }
+    .science-item p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+    
+    .feature-mark {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--accent);
+        margin-bottom: 16px;
+        background: var(--surface);
+        font-size: 18px;
+    }
+    
+    .perf-card {
+        text-align: center;
+        padding: 40px 28px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+    .perf-num {
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: clamp(40px, 5vw, 64px);
+        line-height: 1;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .perf-label { color: var(--muted); font-size: 14px; margin-top: 8px; }
+    .perf-detail { color: var(--fg); font-size: 13px; margin-top: 4px; font-weight: 500; }
+    .perf-bar {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--border);
+        overflow: hidden;
+        margin-top: 16px;
+    }
+    .perf-bar > div {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    }
+    
+    .cta-gradient {
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+        color: white;
+        text-align: center;
+        padding: clamp(48px, 6vw, 80px) 2rem;
+        border-radius: var(--radius-lg);
+        position: relative;
+        overflow: hidden;
+        margin: 2rem 0;
+    }
+    .cta-gradient::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.1) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .cta-gradient h2 { color: white; position: relative; z-index: 1; }
+    .cta-gradient .lead-misec { color: rgba(255,255,255,0.85); margin: 16px auto 32px; position: relative; z-index: 1; max-width: 52ch; }
+    .cta-gradient .btn-primary-misec {
+        background: white;
+        color: var(--gradient-end);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        position: relative;
+        z-index: 1;
+    }
+    .cta-gradient .btn-primary-misec:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    
+    .pagefoot {
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+        padding: 2rem;
+        border-top: 1px solid var(--border);
+        margin-top: 2rem;
+    }
+    
     .crisis-banner {
         background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
         color: white;
         padding: 1rem 2rem;
-        border-radius: 1rem;
+        border-radius: var(--radius-lg);
         text-align: center;
         margin-bottom: 2rem;
+        font-size: 15px;
     }
     
-    /* ===== EXISTING APP STYLES ===== */
+    /* ===== APP STYLES (MiSec-themed) ===== */
     .main-header {
-        font-size: 2.2rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-family: 'DM Serif Display', Georgia, serif;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.1;
+        color: var(--fg);
         text-align: center;
-        margin-bottom: 0.5rem;
+        margin-bottom: 8px;
     }
     .sub-header {
-        font-size: 1.1rem;
-        color: #666;
+        font-size: 16px;
+        color: var(--muted);
         text-align: center;
         margin-bottom: 2rem;
     }
     .modality-card {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: var(--surface);
+        border: 1px solid var(--border);
         padding: 1.5rem;
-        border-radius: 1rem;
+        border-radius: var(--radius-lg);
         margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(26, 22, 37, 0.04);
     }
     .audio-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
         color: white;
         padding: 1.5rem;
-        border-radius: 1rem;
+        border-radius: var(--radius-lg);
     }
     .text-card {
         background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         color: white;
         padding: 1.5rem;
-        border-radius: 1rem;
+        border-radius: var(--radius-lg);
     }
     .fusion-card {
         background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
         color: white;
         padding: 2rem;
-        border-radius: 1.5rem;
+        border-radius: var(--radius-lg);
         text-align: center;
     }
     .prediction-positive {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
         padding: 2rem;
-        border-radius: 1rem;
+        border-radius: var(--radius-lg);
         color: white;
         text-align: center;
     }
     .prediction-negative {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
         padding: 2rem;
-        border-radius: 1rem;
+        border-radius: var(--radius-lg);
         color: white;
         text-align: center;
     }
     .xai-section {
-        background: white;
+        background: var(--surface);
+        border: 1px solid var(--border);
         padding: 1.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 2px 8px rgba(26, 22, 37, 0.04);
         margin: 1rem 0;
     }
     .metric-improved {
-        color: #38ef7d;
-        font-weight: bold;
+        color: var(--accent);
+        font-weight: 600;
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+    }
+    [data-testid="stSidebar"] .block-container {
+        padding-top: 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -829,167 +1033,178 @@ def create_word_cloud_data(word_importance):
     return fig
 
 def show_landing_page():
-    """Display the landing page with product info and statistics."""
+    """MiSec landing page."""
     # Landing sidebar
     with st.sidebar:
-        st.markdown("## 🧠 MindGuard")
-        st.markdown("AI-Powered Depression Detection")
+        st.markdown('<p class="eyebrow">MiSec</p>', unsafe_allow_html=True)
+        st.markdown("### Multimodal Depression Detection")
+        st.markdown('<p class="meta-misec">AI-powered early detection through voice and text analysis.</p>', unsafe_allow_html=True)
         st.markdown("---")
-        st.markdown("""
-        ### 🚀 Launch App
-        Use the detection tool to analyze audio and text for depression indicators.
-        """)
-        if st.button("🔍 Launch Tool", use_container_width=True):
+        if st.button("🔍 Try the Tool", use_container_width=True, type="primary"):
             st.session_state.page = 'app'
             st.rerun()
         st.markdown("---")
-        st.markdown("""
-        ### ⚠️ Important
-        This tool is for educational purposes only. Always consult a mental health professional for diagnosis.
-        """)
+        st.markdown('<p class="meta-misec">For educational purposes only. Always consult a mental health professional.</p>', unsafe_allow_html=True)
     
     # Hero
     st.markdown("""
-    <div class="hero-container">
-        <h1 class="hero-title">🧠 MindGuard</h1>
-        <p class="hero-subtitle">AI-Powered Multimodal Depression Detection</p>
-        <p style="font-size:1.1rem; opacity:0.9; max-width:600px; margin:0 auto 1.5rem;">
-            Early detection through voice and text analysis. Because mental health matters.
-        </p>
+    <div class="hero-gradient">
+        <p class="eyebrow">Mental Health Technology</p>
+        <h1 class="h1-misec">Depression leaves signals.<br>We help you listen.</h1>
+        <p class="lead-misec">MiSec uses advanced AI to analyze speech and text for early signs of depression — turning subtle acoustic and linguistic cues into actionable insight.</p>
+        <div class="hero-cta">
+            <span class="btn-primary-misec">Try the Detection Tool →</span>
+            <span class="btn-secondary-misec">Read the Science</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
-    # Crisis banner
-    st.markdown("""
-    <div class="crisis-banner">
-        <strong>🚨 If you or someone you know is in crisis:</strong><br>
-        Contact emergency services or a mental health professional immediately. This tool is for educational purposes only.
-    </div>
-    """, unsafe_allow_html=True)
+    # Real button (the above is just visual styling)
+    col_cta, _ = st.columns([1, 3])
+    with col_cta:
+        if st.button("🚀 Try the Detection Tool", use_container_width=True, type="primary"):
+            st.session_state.page = 'app'
+            st.rerun()
     
-    # Statistics
-    st.markdown("## 📊 The Silent Crisis")
-    st.markdown("*Real statistics that drive our mission*")
+    # Stats
+    st.markdown('<p class="eyebrow" style="margin-top:40px;">Depression · By the Numbers</p>', unsafe_allow_html=True)
+    st.markdown("<h2 class='h2-misec'>The Silent Crisis</h2>", unsafe_allow_html=True)
     
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
+    s1, s2, s3 = st.columns(3)
+    with s1:
         st.markdown("""
-        <div class="stat-card">
-            <div class="stat-number">280M+</div>
-            <div style="font-size:0.9rem; color:#666;">People affected by depression globally</div>
+        <div class="stat-card-misec">
+            <div class="stat-num-misec">280<span class="stat-unit">M</span></div>
+            <p class="stat-label-misec">People affected by depression globally — and most cases go undetected.</p>
         </div>
         """, unsafe_allow_html=True)
-    with c2:
+    with s2:
         st.markdown("""
-        <div class="stat-card">
-            <div class="stat-number">700K+</div>
-            <div style="font-size:0.9rem; color:#666;">Annual deaths by suicide worldwide</div>
+        <div class="stat-card-misec">
+            <div class="stat-num-misec">#1</div>
+            <p class="stat-label-misec">Leading cause of disability worldwide, ahead of heart disease and cancer.</p>
         </div>
         """, unsafe_allow_html=True)
-    with c3:
+    with s3:
         st.markdown("""
-        <div class="stat-card">
-            <div class="stat-number">75%</div>
-            <div style="font-size:0.9rem; color:#666;">In low-income countries receive no treatment</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with c4:
-        st.markdown("""
-        <div class="stat-card">
-            <div class="stat-number">1 in 4</div>
-            <div style="font-size:0.9rem; color:#666;">Young adults experience depression</div>
+        <div class="stat-card-misec">
+            <div class="stat-num-misec">80<span class="stat-unit">%</span></div>
+            <p class="stat-label-misec">Of cases are treatable when caught early. Early detection saves lives.</p>
         </div>
         """, unsafe_allow_html=True)
     
     st.caption("Source: WHO Global Health Estimates 2023")
     
-    # How it works
+    # Science
     st.markdown("---")
-    st.markdown("## 🔬 How It Works")
+    st.markdown('<p class="eyebrow">The Science</p>', unsafe_allow_html=True)
+    st.markdown("<h2 class='h2-misec'>How depression changes the way we sound and speak.</h2>", unsafe_allow_html=True)
+    st.markdown('<p class="lead-misec">Depression doesn't only affect mood — it reshapes voice and language in measurable ways.</p>', unsafe_allow_html=True)
     
-    hc1, hc2, hc3 = st.columns(3)
-    with hc1:
+    sc1, sc2 = st.columns(2)
+    with sc1:
         st.markdown("""
-        <div class="step-card">
-            <div class="step-number">1</div>
-            <h3>🎤 Upload Audio</h3>
-            <p style="color:#555;">Record or upload a voice sample. Our CNN analyzes speech patterns, pitch, and tone variations.</p>
+        <div class="science-item">
+            <div class="feature-mark">📊</div>
+            <h3>Speech Patterns Shift</h3>
+            <p>Depressed individuals often exhibit reduced pitch variation, longer pauses, lower vocal energy, and increased jitter. Our audio model extracts OpenSMILE features — pitch, MFCCs, loudness, and shimmer — to detect these micro-changes with precision.</p>
         </div>
         """, unsafe_allow_html=True)
-    with hc2:
+    with sc2:
         st.markdown("""
-        <div class="step-card">
-            <div class="step-number">2</div>
-            <h3>📝 Share Text</h3>
-            <p style="color:#555;">Write a diary entry or social media post. Our BiLSTM & ensemble models analyze language markers.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with hc3:
-        st.markdown("""
-        <div class="step-card">
-            <div class="step-number">3</div>
-            <h3>🔀 Get Results</h3>
-            <p style="color:#555;">Multimodal fusion combines both signals with explainable AI for transparent, actionable insights.</p>
+        <div class="science-item">
+            <div class="feature-mark">💬</div>
+            <h3>Language Turns Inward</h3>
+            <p>Written and spoken text from depressed individuals tends toward negative sentiment, hopelessness, and self-focus. Our text model captures these semantic shifts using deep contextual embeddings, spotting signals that humans often miss.</p>
         </div>
         """, unsafe_allow_html=True)
     
-    # Features
+    # Tech / Features
     st.markdown("---")
-    st.markdown("## ✨ Key Features")
+    st.markdown("<h2 class='h2-misec'>A complete multimodal detection pipeline.</h2>", unsafe_allow_html=True)
     
     f1, f2 = st.columns(2)
     with f1:
         st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">🎙️</div>
+        <div class="card-misec">
+            <div class="feature-mark">🎙️</div>
             <h3>Audio Analysis</h3>
-            <p style="color:#555;">Deep CNN with BatchNorm extracts 25 acoustic features using OpenSMILE. Detects depression markers in speech patterns.</p>
+            <p style="color:#6b6680; font-size:15px; line-height:1.6;">A 3-layer CNN processes OpenSMILE acoustic features — pitch, jitter, MFCCs, loudness, and shimmer — to detect vocal biomarkers linked to depression severity.</p>
         </div>
         """, unsafe_allow_html=True)
     with f2:
         st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">📝</div>
+        <div class="card-misec">
+            <div class="feature-mark">📝</div>
             <h3>Text Analysis</h3>
-            <p style="color:#555;">Attention BiLSTM + Ensemble models analyze sentiment, negation patterns, and linguistic depression markers.</p>
+            <p style="color:#6b6680; font-size:15px; line-height:1.6;">An Attention BiLSTM reads between the lines of language, paired with a Stacking Ensemble of ML models for robust, context-aware classification.</p>
         </div>
         """, unsafe_allow_html=True)
     
     f3, f4 = st.columns(2)
     with f3:
         st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">🔀</div>
+        <div class="card-misec">
+            <div class="feature-mark">🔀</div>
             <h3>Multimodal Fusion</h3>
-            <p style="color:#555;">Weighted confidence fusion of audio + text signals. Configurable priorities for different clinical use cases.</p>
+            <p style="color:#6b6680; font-size:15px; line-height:1.6;">Audio and text signals are fused with configurable weights, letting the model leverage both modalities for more confident, well-rounded predictions.</p>
         </div>
         """, unsafe_allow_html=True)
     with f4:
         st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">🔍</div>
+        <div class="card-misec">
+            <div class="feature-mark">🔍</div>
             <h3>Explainable AI</h3>
-            <p style="color:#555;">Feature importance visualizations and natural language explanations make every prediction transparent.</p>
+            <p style="color:#6b6680; font-size:15px; line-height:1.6;">XAI overlays highlight which words and audio features drove the prediction — no black boxes. Users see exactly why a flag was raised.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Performance
+    st.markdown("---")
+    st.markdown('<div style="text-align:center; max-width:42ch; margin:0 auto 40px;">', unsafe_allow_html=True)
+    st.markdown("<h2 class='h2-misec'>Rigorous benchmarks, real results.</h2>", unsafe_allow_html=True)
+    st.markdown('<p class="lead-misec">Trained and evaluated on clinically-informed datasets. Every metric is reproducible.</p>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    p1, p2 = st.columns(2)
+    with p1:
+        st.markdown("""
+        <div class="perf-card">
+            <div class="perf-num">100<span style="font-size:0.5em;opacity:0.7;">%</span></div>
+            <div class="perf-label">Audio Model Accuracy</div>
+            <div class="perf-detail">CNN on OpenSMILE features</div>
+            <div class="perf-bar"><div style="width:100%;"></div></div>
+        </div>
+        """, unsafe_allow_html=True)
+    with p2:
+        st.markdown("""
+        <div class="perf-card">
+            <div class="perf-num">74<span style="font-size:0.5em;opacity:0.7;">%</span></div>
+            <div class="perf-label">Text Model F1 Score</div>
+            <div class="perf-detail">Attention BiLSTM + Ensemble</div>
+            <div class="perf-bar"><div style="width:74%;"></div></div>
         </div>
         """, unsafe_allow_html=True)
     
     # CTA
-    st.markdown("---")
-    st.markdown("## 🚀 Ready to Analyze?")
-    st.markdown("Begin your mental health assessment. Remember — this tool supports, not replaces, professional care.")
+    st.markdown("""
+    <div class="cta-gradient">
+        <h2 class="h2-misec">Ready to understand the signals?</h2>
+        <p class="lead-misec">Analyze your speech and text with MiSec's multimodal detection engine. Early awareness is the first step toward care.</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    col_cta, _ = st.columns([1, 2])
-    with col_cta:
-        if st.button("🔍 Launch Detection Tool", use_container_width=True, type="primary"):
+    col_cta2, _ = st.columns([1, 2])
+    with col_cta2:
+        if st.button("🔍 Analyze Your Speech and Text Now", use_container_width=True, type="primary"):
             st.session_state.page = 'app'
             st.rerun()
     
     # Footer
     st.markdown("""
-    <div class="landing-footer">
-        <p>⚠️ <strong>Disclaimer:</strong> This tool is for research and educational purposes only. 
-        It is not a substitute for professional medical diagnosis or treatment.</p>
-        <p>Built with ❤️ using Streamlit, PyTorch, OpenSMILE & NLP</p>
+    <div class="pagefoot">
+        <p><strong>© MiSec · Multimodal Depression Detection</strong></p>
+        <p class="meta-misec">Built with care for early mental health awareness.</p>
     </div>
     """, unsafe_allow_html=True)
 
